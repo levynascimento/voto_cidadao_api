@@ -1,5 +1,6 @@
 package br.com.urnaeletronica.service;
 
+import br.com.urnaeletronica.dto.FinalizarVotacaoResponse;
 import br.com.urnaeletronica.dto.InicializarVotacaoResponse;
 import br.com.urnaeletronica.entity.Urna;
 import br.com.urnaeletronica.enums.UrnaEstado;
@@ -47,6 +48,26 @@ public class VotacaoServiceImpl implements VotacaoService {
 
     @Override
     @Transactional
+    public FinalizarVotacaoResponse finalizarVotacao(String senhaInformada) {
+        Urna urna = urnaRepository.findById(ID_UNICO_URNA)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Urna não encontrada para inicialização"));
+
+        validarSenha(senhaInformada);
+        validarEstadoAtualParaFinalizar(urna.getEstado());
+
+        urna.setEstado(UrnaEstado.FINALIZADA);
+        urna.setInicioVotacao(LocalDateTime.now());
+        urnaRepository.save(urna);
+
+        return FinalizarVotacaoResponse.builder()
+                .mensagem("Votação finalizada com sucesso.")
+                .estado(urna.getEstado())
+                .fimVotacao(urna.getInicioVotacao())
+                .build();
+    }
+
+    @Override
+    @Transactional
     public void garantirUrnaInicializada() {
         if (urnaRepository.existsById(ID_UNICO_URNA)) {
             return;
@@ -73,6 +94,16 @@ public class VotacaoServiceImpl implements VotacaoService {
 
         if (estadoAtual == UrnaEstado.FINALIZADA) {
             throw new EstadoUrnaInvalidoException("A votação já foi finalizada e não pode ser reiniciada");
+        }
+    }
+
+    private void validarEstadoAtualParaFinalizar(UrnaEstado estadoAtual) {
+        if (estadoAtual == UrnaEstado.AGUARDANDO_INICIO) {
+            throw new EstadoUrnaInvalidoException("A votação não foi iniciada.");
+        }
+
+        if (estadoAtual == UrnaEstado.FINALIZADA) {
+            throw new EstadoUrnaInvalidoException("A votação já foi finalizada.");
         }
     }
 }
