@@ -11,9 +11,8 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "candidato")
-public class Candidato {
+public class Candidato extends Cidadao {
 
-    @Id
     @Column(name = "numero_candidato")
     private Integer numeroCandidato;
 

@@ -11,8 +11,8 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "eleitor")
-public class Eleitor {
-    @Id
+public class Eleitor  extends Cidadao{
+
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
