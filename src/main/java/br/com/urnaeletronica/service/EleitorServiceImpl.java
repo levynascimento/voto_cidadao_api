@@ -25,8 +25,8 @@ public class EleitorServiceImpl implements EleitorService {
         return IdentificarEleitorResponse.builder()
                 .id(eleitor.getId())
                 .tituloEleitor(eleitor.getTituloEleitor())
-                .nome(eleitor.getNome())
-                .cpf(eleitor.getCpf())
+                .nome(eleitor.getCidadao().getNome())
+                .cpf(eleitor.getCidadao().getCpf())
                 .jaVotou(eleitor.isJaVotou())
                 .build();
     }

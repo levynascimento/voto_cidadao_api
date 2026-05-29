@@ -6,13 +6,12 @@ import lombok.*;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "eleitor")
-public class Eleitor  extends Cidadao{
-
+public class Eleitor {
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
