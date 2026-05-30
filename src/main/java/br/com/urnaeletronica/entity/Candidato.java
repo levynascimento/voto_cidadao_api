@@ -32,4 +32,7 @@ public class Candidato  {
 
     @Column(name = "status_eleicao")
     private Integer statusEleicao;
+
+    @Column(name = "foto_url")
+    private String fotoUrl;
 }
