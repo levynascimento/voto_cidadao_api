@@ -6,14 +6,16 @@ import lombok.*;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "candidato")
-public class Candidato {
-
+public class Candidato  {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @Column(name = "numero_candidato")
     private Integer numeroCandidato;
 
