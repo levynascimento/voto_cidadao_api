@@ -39,6 +39,22 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request, List.of());
     }
 
+    @ExceptionHandler(JaVotouException.class)
+    public ResponseEntity<ApiErrorResponse> handleJaVotouException(
+            JaVotouException ex,
+            HttpServletRequest request) {
+
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage(), request, List.of());
+    }
+
+    @ExceptionHandler(FraudeNaVotacaoException.class)
+    public ResponseEntity<ApiErrorResponse> handleFraudeNaVotacaoException(
+            FraudeNaVotacaoException ex,
+            HttpServletRequest request) {
+
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage(), request, List.of());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValidException(
             MethodArgumentNotValidException ex,
