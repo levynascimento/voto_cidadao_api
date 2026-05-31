@@ -53,24 +53,39 @@ public class VotoServiceImpl implements VotoService {
             throw new JaVotouException();
         }
     }
-
-    private void validarVotacao(VotarRequest request) throws FraudeNaVotacaoException{
-        // Guarda todos os votos do eleitor num map cujas chaves sao cagoID e numeroCandidato
-        Map<Long, Long> votosEleitor = new HashMap<>();
-
+    private void validarVotosDuplicados(VotarRequest request, Map<Long, Set<Long>> candidatosVotadosPorCargo) throws FraudeNaVotacaoException{
         for(VotoRequest votoRequest : request.getVotosEleitor()){
             Long cargoId = votoRequest.getCargoID();
-            votosEleitor.put(cargoId, votosEleitor.getOrDefault(cargoId, 0L) + 1L);
+            Long candidatoNumero = votoRequest.getNumeroCandidato();
+
+            candidatosVotadosPorCargo.putIfAbsent(cargoId, new  HashSet<>());
+
+            Set<Long> candidatos = candidatosVotadosPorCargo.get(cargoId);
+
+            if (!candidatos.add(candidatoNumero)) {
+                throw new FraudeNaVotacaoException(
+                        "Voto duplicado detectado: O candidato ao cargo " + cargoId+ " de número " + candidatoNumero + " recebeu mais de um voto para o mesmo cargo."
+                );
+            }
         }
-
-        List<Cargo> cargos = cargoRepository.findAllById(votosEleitor.keySet());
-
+    }
+    private void validarLimiteCargos(List<Cargo> cargos,  Map<Long, Set<Long>> candidatosVotadosPorCargo) throws FraudeNaVotacaoException {
         for(Cargo cargo : cargos) {
-            Long votoNoCargo = votosEleitor.get(cargo.getId());
+            int votoNoCargo = candidatosVotadosPorCargo.get(cargo.getId()).size();
             if (votoNoCargo > cargo.getLimiteVotos()){
                 throw new FraudeNaVotacaoException("O eleitor deseja votar no cargo além " +
                         "do limite de votos para o cargo");
             }
         }
+    }
+    private void validarVotacao(VotarRequest request) throws FraudeNaVotacaoException{
+        // Guarda todos os votos do eleitor num map cujas chaves sao cagoID e numeroCandidato
+        Map<Long, Set<Long>> candidatosVotadosPorCargo = new HashMap<>();
+
+        validarVotosDuplicados(request, candidatosVotadosPorCargo);
+
+        List<Cargo> cargos = cargoRepository.findAllById(candidatosVotadosPorCargo.keySet());
+
+        validarLimiteCargos(cargos, candidatosVotadosPorCargo);
     }
 }
