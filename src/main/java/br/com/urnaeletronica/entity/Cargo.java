@@ -17,4 +17,7 @@ public class Cargo {
 
     @Column(name = "nome", nullable = false, length = 50)
     private String nome;
+
+    @Column(name = "limite_votos_sessao", nullable = false)
+    private Integer limiteVotos = 1;
 }

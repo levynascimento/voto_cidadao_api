@@ -31,11 +31,11 @@ public class DataInitializerConfig {
             // Dentro do método initializeData()...
             if (cidadaoRepository.count() == 0) {
             // 1. Seed de Cargos
-            Cargo pres = cargoRepository.save(Cargo.builder().nome("Presidente").build());
-            Cargo gov = cargoRepository.save(Cargo.builder().nome("Governador").build());
-            Cargo depFed = cargoRepository.save(Cargo.builder().nome("Deputador Federal").build());
-            Cargo depEst = cargoRepository.save(Cargo.builder().nome("Deputador Estadual").build());
-            Cargo senador = cargoRepository.save(Cargo.builder().nome("Senador").build());
+            Cargo pres = cargoRepository.save(Cargo.builder().nome("Presidente").limiteVotos(1).build());
+            Cargo gov = cargoRepository.save(Cargo.builder().nome("Governador").limiteVotos(1).build());
+            Cargo depFed = cargoRepository.save(Cargo.builder().nome("Deputador Federal").limiteVotos(2).build());
+            Cargo depEst = cargoRepository.save(Cargo.builder().nome("Deputador Estadual").limiteVotos(2).build());
+            Cargo senador = cargoRepository.save(Cargo.builder().nome("Senador").limiteVotos(2).build());
 
 
             // 2. Seed de Cidadãos
