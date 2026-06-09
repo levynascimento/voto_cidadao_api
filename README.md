@@ -73,40 +73,206 @@ Você pode sobrescrever com variável de ambiente:
 export URNA_TSE_SENHA="NOVA_SENHA"
 ```
 
-## Endpoint da US01
+## Endpoints da API
 
-### Inicializar votação
+### 1. Inicializar votação
+> Como operador do TSE, inicio a eleição com senha para permitir a votação.
+
 **POST** `/api/v1/votacao/inicializar`
 
-#### Request body
+**Request body**
 ```json
 {
   "senha": "TSE2024"
 }
 ```
 
-#### Resposta de sucesso (200)
+**Resposta de sucesso (200)**
 ```json
 {
   "mensagem": "Votação iniciada com sucesso",
   "estado": "EM_VOTACAO",
-  "inicioVotacao": "2026-04-22T20:00:00"
+  "inicioVotacao": "2026-06-09T20:00:00"
 }
 ```
 
-#### Possíveis erros
-- `400 Bad Request` - payload inválido (ex.: senha vazia)
-- `403 Forbidden` - senha inválida
-- `404 Not Found` - urna não encontrada
-- `409 Conflict` - votação já iniciada ou finalizada
-- `500 Internal Server Error` - erro não tratado
+**Possíveis erros**
+| Status | Descrição |
+|--------|-----------|
+| `400`  | Payload inválido (senha vazia) |
+| `403`  | Senha inválida (`SenhaInvalidaException`) |
+| `404`  | Urna não encontrada (`RecursoNaoEncontradoException`) |
+| `409`  | Votação já iniciada ou finalizada (`EstadoUrnaInvalidoException`) |
 
-## Exemplo com curl
-```bash
-curl -X POST "http://localhost:8080/api/v1/votacao/inicializar" \
-  -H "Content-Type: application/json" \
-  -d '{"senha":"TSE2024"}'
+---
+
+### 2. Encerrar votação
+> Como operador do TSE, encerro a eleição com senha.
+
+**POST** `/api/v1/votacao/encerrar`
+
+**Request body**
+```json
+{
+  "senha": "TSE2024"
+}
 ```
+
+**Resposta de sucesso (200)**
+```json
+{
+  "mensagem": "Votação finalizada com sucesso.",
+  "estado": "FINALIZADA",
+  "fimVotacao": "2026-06-09T20:00:00"
+}
+```
+
+**Possíveis erros**
+| Status | Descrição |
+|--------|-----------|
+| `400`  | Payload inválido (senha vazia) |
+| `403`  | Senha inválida (`SenhaInvalidaException`) |
+| `404`  | Urna não encontrada (`RecursoNaoEncontradoException`) |
+| `409`  | Votação não iniciada ou já finalizada (`EstadoUrnaInvalidoException`) |
+
+---
+
+### 3. Identificar eleitor
+> Como mesário, identifico o eleitor pelo título para liberar o voto.
+
+**POST** `/api/v1/eleitor/identificar`
+
+**Request body**
+```json
+{
+  "tituloEleitor": "10003"
+}
+```
+
+**Resposta de sucesso (200)**
+```json
+{
+  "id": 1,
+  "tituloEleitor": "10003",
+  "nome": "João da Silva",
+  "cpf": "12345678901",
+  "jaVotou": false
+}
+```
+
+**Possíveis erros**
+| Status | Descrição |
+|--------|-----------|
+| `400`  | Payload inválido (título vazio) |
+| `404`  | Eleitor não encontrado (`RecursoNaoEncontradoException`) |
+
+---
+
+### 4. Votar
+> Como eleitor, registro meus votos para os cargos em disputa.
+
+**POST** `/api/v1/voto/votar`
+
+**Campos do `VotoRequest` (dentro de `votosEleitor`)**
+| Campo | Tipo | Obrigatório | Descrição |
+|-------|------|:---:|---|
+| `cargoID` | Long | ✅ | ID do cargo que está sendo votado |
+| `numeroCandidato` | Long | ❌ | Número do candidato (ignorado para BRANCO/NULO) |
+| `tipoVoto` | Enum | ✅ | `NORMAL`, `BRANCO` ou `NULO` (default: `NORMAL`) |
+
+**Exemplo 1 — Voto normal em candidato**
+
+Request:
+```json
+{
+  "tituloEleitor": "10003",
+  "votosEleitor": [
+    {
+      "cargoID": 1,
+      "numeroCandidato": 10,
+      "tipoVoto": "NORMAL"
+    }
+  ]
+}
+```
+
+Response (200):
+```json
+{
+  "mensagem": "Votação computada com sucesso!",
+  "nomeEleitor": "João da Silva",
+  "dataVotacao": "2026-06-09T20:00:00"
+}
+```
+
+**Exemplo 2 — Voto em branco e nulo**
+
+Request:
+```json
+{
+  "tituloEleitor": "10002",
+  "votosEleitor": [
+    {
+      "cargoID": 1,
+      "tipoVoto": "BRANCO"
+    },
+    {
+      "cargoID": 3,
+      "tipoVoto": "NULO"
+    }
+  ]
+}
+```
+
+Response (200):
+```json
+{
+  "mensagem": "Votação computada com sucesso!",
+  "nomeEleitor": "Maria Souza",
+  "dataVotacao": "2026-06-09T20:00:00"
+}
+```
+
+**Exemplo 3 — Voto duplicado no mesmo cargo (ERRO)**
+
+Request:
+```json
+{
+  "tituloEleitor": "10001",
+  "votosEleitor": [
+    {
+      "cargoID": 3,
+      "numeroCandidato": 80,
+      "tipoVoto": "NORMAL"
+    },
+    {
+      "cargoID": 3,
+      "numeroCandidato": 80,
+      "tipoVoto": "NORMAL"
+    }
+  ]
+}
+```
+
+Response (409):
+```json
+{
+  "timestamp": "2026-06-09T20:00:00-03:00",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Voto duplicado detectado: O candidato ao cargo 3 de número 80 recebeu mais de um voto para o mesmo cargo.",
+  "path": "/api/v1/voto/votar",
+  "details": []
+}
+```
+
+**Possíveis erros**
+| Status | Descrição |
+|--------|-----------|
+| `400`  | Payload inválido (título vazio, cargoID ausente) |
+| `404`  | Eleitor não encontrado (`RecursoNaoEncontradoException`) |
+| `409`  | Eleitor já votou (`JaVotouException`) |
+| `409`  | Fraude na votação: voto duplicado, candidato não concorre ao cargo, limite de votos por cargo excedido (`FraudeNaVotacaoException`) |
 
 ## Próximas sprints (visão)
 - Cadastro de candidatos e cargos (1 presidente, 2 deputados)
