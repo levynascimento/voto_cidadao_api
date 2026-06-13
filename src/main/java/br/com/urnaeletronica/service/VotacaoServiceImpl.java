@@ -56,13 +56,13 @@ public class VotacaoServiceImpl implements VotacaoService {
         validarEstadoAtualParaFinalizar(urna.getEstado());
 
         urna.setEstado(UrnaEstado.FINALIZADA);
-        urna.setInicioVotacao(LocalDateTime.now());
+        urna.setFimVotacao(LocalDateTime.now());
         urnaRepository.save(urna);
 
         return FinalizarVotacaoResponse.builder()
                 .mensagem("Votação finalizada com sucesso.")
                 .estado(urna.getEstado())
-                .fimVotacao(urna.getInicioVotacao())
+                .fimVotacao(urna.getFimVotacao())
                 .build();
     }
 

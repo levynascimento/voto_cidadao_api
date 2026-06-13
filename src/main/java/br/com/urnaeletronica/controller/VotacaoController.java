@@ -32,7 +32,7 @@ public class VotacaoController {
     public ResponseEntity<FinalizarVotacaoResponse> finalizarVotacao(
             @Valid
             @RequestBody FinalizarVotacaoRequest request
-            )
+    )
     {
         FinalizarVotacaoResponse response = votacaoService.finalizarVotacao(request.getSenha());
         return ResponseEntity.status(HttpStatus.OK).body(response);
