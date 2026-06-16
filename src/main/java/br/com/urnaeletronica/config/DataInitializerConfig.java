@@ -97,7 +97,7 @@ public class DataInitializerConfig {
                 candidatoRepository.save(cand3);
 
                 Candidato cand4 = new Candidato();
-                cand4.setNumeroCandidato(40);
+                cand4.setNumeroCandidato(440);
                 cand4.setNumeroVotos(0);
                 cand4.setStatusEleicao(1);
                 cand4.setCidadao(c7);
@@ -106,7 +106,7 @@ public class DataInitializerConfig {
                 candidatoRepository.save(cand4);
 
                 Candidato cand5 = new Candidato();
-                cand5.setNumeroCandidato(80);
+                cand5.setNumeroCandidato(880);
                 cand5.setNumeroVotos(0);
                 cand5.setStatusEleicao(1);
                 cand5.setCidadao(c8);
